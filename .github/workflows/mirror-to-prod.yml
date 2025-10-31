@@ -12,30 +12,20 @@ jobs:
       - name: Checkout DEV
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # historial completo
+          fetch-depth: 0
 
       - name: Configurar Git
         run: |
           git config user.name "${{ secrets.PROD_GRUPO3 }}"
           git config user.email "ci-bot@users.noreply.github.com"
 
-      - name: Construir URL remota con credenciales
-        id: buildurl
-        shell: bash
-        run: |
-          set -e
-          RAW_URL="${{ secrets.PROD_REPO }}"   # debe ser https://github.com/ORG/REPO.git
-          AUTH_URL="${RAW_URL/https:\/\//https:\/\/${{ secrets.PROD_GRUPO3 }}:${{ secrets.PROD_PAT }}@}"
-          echo "AUTH_URL=$AUTH_URL" >> $GITHUB_OUTPUT
-
       - name: Agregar remoto de producción
         run: |
           git remote remove prod || true
-          git remote add prod "${{ steps.buildurl.outputs.AUTH_URL }}"
+          git remote add prod "https://${{ secrets.PROD_GRUPO3 }}:${{ secrets.PROD_PAT }}@github.com/grupog849-netizen/proyecto-ubuntu-prod.git"
           git remote -v
 
       - name: Enviar espejo (branches + tags)
         run: |
-          set -e
           git push --prune prod +refs/heads/*:refs/heads/*
           git push --prune --tags prod
