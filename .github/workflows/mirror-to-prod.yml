@@ -29,8 +29,8 @@ jobs:
 
       - name: Mirror branches (force + prune)
         run: |
-          git push --force --prune prod +refs/heads/:refs/heads/
+          git push --force --prune prod '+refs/heads/*:refs/heads/*'
 
       - name: Mirror tags (force + prune)
         run: |
-          git push --force --prune --tags prod
+          git push --force --prune --tags prod
