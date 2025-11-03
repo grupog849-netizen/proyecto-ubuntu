@@ -1,1 +1,1 @@
-bd
+prueba db 
