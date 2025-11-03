@@ -2,10 +2,7 @@ name: Auto Merge Branches
 
 on:
   push:
-    branches:
-      - dev-app
-      - dev-db
-      - staging
+    branches: [ dev-app, dev-db, staging ]
   workflow_dispatch:
 
 permissions:
@@ -22,17 +19,25 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Config Git
+      - name: Config Git identity
         run: |
           git config user.name "${{ secrets.PROD_GRUPO3 }}"
           git config user.email "ci-bot@users.noreply.github.com"
 
-      - name: Reconfigurar origin con PAT (push con permisos)
+      - name: Use PAT for pushes
         run: |
           git remote set-url origin "https://${{ secrets.PROD_GRUPO3 }}:${{ secrets.PROD_PAT }}@github.com/grupog849-netizen/proyecto-ubuntu.git"
           git fetch origin --prune
 
-      - name: Merge dev-app -> staging (no falla si ya está al día)
+      # ↓ Minimiza conflictos trayendo MAIN a STAGING antes
+      - name: Update staging with latest main
+        run: |
+          git checkout staging
+          git merge --no-ff --no-edit origin/main || true
+          git push origin staging
+
+      # ↓ Integra dev-app en staging
+      - name: Merge dev-app -> staging
         run: |
           git checkout staging
           git merge --no-ff --no-edit origin/dev-app || true
@@ -48,19 +53,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Reconfigurar origin con PAT
+      - name: Use PAT for pushes
         run: |
           git remote set-url origin "https://${{ secrets.PROD_GRUPO3 }}:${{ secrets.PROD_PAT }}@github.com/grupog849-netizen/proyecto-ubuntu.git"
           git fetch origin --prune
 
-      # (Opcional) Sincroniza staging con main para reducir conflictos
-      - name: Update staging with latest main
-        run: |
-          git checkout staging
-          git merge --no-ff --no-edit origin/main || true
-          git push origin staging
-
-      - name: Crear PR staging -> main
+      - name: Create PR staging -> main
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
