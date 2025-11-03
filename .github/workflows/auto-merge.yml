@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev-app
-      - dev-db
       - staging
   workflow_dispatch:
 
