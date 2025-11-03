@@ -1,1 +1,1 @@
-hola 
+Resolver conflictos con PR
