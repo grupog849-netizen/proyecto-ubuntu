@@ -1,1 +1,1 @@
-Resolver conflictos con PR
+qsdcvbnm
