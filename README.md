@@ -1,1 +1,1 @@
-prueba db 
+base de datos 
