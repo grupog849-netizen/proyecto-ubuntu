@@ -1,9 +1,2 @@
-# Versión de prueba del flujo Mirror DEV -> PROD
+# PRUEBA DE RAMAS 
 
-
-
-hola
-
-
-
-adios
