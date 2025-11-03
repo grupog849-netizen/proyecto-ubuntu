@@ -9,42 +9,44 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: auto-merge-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   merge-to-staging:
+    # Solo fusiona cuando hay cambios en dev-app
+    if: github.ref == 'refs/heads/dev-app'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (no bot creds)
+      - name: Checkout (usa GITHUB_TOKEN)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
+          # ¡No deshabilitar credenciales!
+          # persist-credentials: false
 
       - name: Set git identity
         run: |
           git config user.name  "ci-bot"
           git config user.email "ci-bot@users.noreply.github.com"
 
-      # Habilita push con PAT si lo usas (opcional si el repo permite GITHUB_TOKEN)
-      # - name: Switch origin to PAT
-      #   run: |
-      #     git remote set-url origin "https://${{ secrets.PROD_GRUPO3 }}:${{ secrets.PROD_PAT }}@github.com/grupog849-netizen/proyecto-ubuntu.git"
-      #     git fetch origin --prune
-
-      - name: Merge dev-app -> staging (no falla si ya está al día)
+      - name: Merge dev-app -> staging (idempotente)
         run: |
           git fetch origin --prune
           git checkout staging
           git merge --no-ff --no-edit origin/dev-app || true
-          git push origin HEAD:staging
+          git push origin staging
 
   pr-staging-to-main:
     needs: merge-to-staging
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (usa GITHUB_TOKEN)
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
+          # persist-credentials: false   # <- NO
 
       - name: Create PR staging -> main
         id: cpr
@@ -59,7 +61,6 @@ jobs:
           delete-branch: true
           draft: false
 
-      # Si tu rama protegida exige 1 review, aprueba con el bot:
       - name: Auto-approve (si se requiere)
         if: steps.cpr.outputs.pull-request-number != ''
         uses: juliangruber/approve-pull-request-action@v2
@@ -67,7 +68,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           number: ${{ steps.cpr.outputs.pull-request-number }}
 
-      # Activa el auto-merge en modo squash (compatible con "Require linear history")
       - name: Enable auto-merge (squash)
         if: steps.cpr.outputs.pull-request-number != ''
         uses: peter-evans/enable-pull-request-automerge@v3
