@@ -24,19 +24,20 @@ jobs:
           git config user.name "${{ secrets.PROD_GRUPO3 }}"
           git config user.email "ci-bot@users.noreply.github.com"
 
-      - name: Reconfigurar origin con PAT (push con permisos)
+      - name: Reconfigurar origin con PAT
         run: |
           git remote set-url origin "https://${{ secrets.PROD_GRUPO3 }}:${{ secrets.PROD_PAT }}@github.com/grupog849-netizen/proyecto-ubuntu.git"
           git fetch origin --prune
 
-      # <<< ESTE PASO ES CLAVE: mantener staging al día con main >>>
+      # ① Trae MAIN a STAGING para minimizar conflictos
       - name: Update staging with latest main
         run: |
           git checkout staging
           git merge --no-ff --no-edit origin/main || true
           git push origin staging
 
-      - name: Merge dev-app -> staging (idempotente)
+      # ② Integra DEV en STAGING
+      - name: Merge dev-app -> staging (no falla si ya está al día)
         run: |
           git checkout staging
           git merge --no-ff --no-edit origin/dev-app || true
