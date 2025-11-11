@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev-app
-
 jobs:
   deploy-dev:
     runs-on: [self-hosted, ubuntu-dev]
