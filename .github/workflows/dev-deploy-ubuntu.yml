@@ -13,14 +13,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Crear carpeta destino si no existe
+      - name: Instalar rsync
         run: |
-          sudo mkdir -p /var/www/html/proyecto-ubuntu-dev
+          sudo apt update -y
+          sudo apt install -y rsync
 
-      - name: Sincronizar archivos al servidor DEV
+      - name: Copiar archivos al entorno DEV (Ubuntu Proxmox)
         run: |
           SOURCE="$GITHUB_WORKSPACE"
           TARGET="/var/www/html/proyecto-ubuntu-dev"
 
-          # Sincroniza todo el repo con la carpeta del sitio
+          sudo mkdir -p "$TARGET"
           sudo rsync -av --delete "$SOURCE"/ "$TARGET"/
