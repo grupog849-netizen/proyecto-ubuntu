@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - dev-app
+
 jobs:
   deploy-dev:
-    runs-on: [self-hosted,dev]
+    runs-on: [self-hosted, dev]
 
     steps:
       - name: Checkout repo
