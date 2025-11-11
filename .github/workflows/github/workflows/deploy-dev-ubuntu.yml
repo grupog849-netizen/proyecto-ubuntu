@@ -1,20 +1,26 @@
-name: Deploy Dev Ubuntu
+name: DEV - Deploy Ubuntu
 
 on:
   push:
     branches:
-      - dev-app  # Se ejecuta solo cuando haces push a esta rama
-  workflow_dispatch:  # Permite ejecutar manualmente el workflow desde GitHub
+      - dev-app
 
 jobs:
-  deploy:
-    runs-on: self-hosted  # Esto le indica a GitHub que ejecute este trabajo en un runner local (Ubuntu)
+  deploy-dev:
+    runs-on: [self-hosted, ubuntu-dev]
 
     steps:
-      - name: Checkout the repo
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Asegúrate de traer todo el historial
 
-      - name: Run deploy script
-        run: sudo /srv/deploy/pull-deploy.sh  # Ejecuta tu script de despliegue en Ubuntu
+      - name: Instalar rsync
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y rsync
+
+      - name: Copiar archivos al entorno DEV (Ubuntu Proxmox)
+        run: |
+          SOURCE="$GITHUB_WORKSPACE"
+          TARGET="/var/www/html/proyecto-ubuntu-dev"
+          sudo mkdir -p "$TARGET"
+          sudo rsync -av --delete "$SOURCE"/ "$TARGET"/
