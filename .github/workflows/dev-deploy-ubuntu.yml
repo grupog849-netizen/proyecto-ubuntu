@@ -7,21 +7,14 @@ on:
 
 jobs:
   deploy-dev:
-    runs-on: [self-hosted,dev]
+    runs-on: [self-hosted, dev]
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Instalar rsync
+      - name: Deploy to DEV (Ubuntu Proxmox)
         run: |
-          sudo apt update -y
-          sudo apt install -y rsync
-
-      - name: Copiar archivos al entorno DEV (Ubuntu Proxmox)
-        run: |
-          SOURCE="$GITHUB_WORKSPACE"
           TARGET="/var/www/html/proyecto-ubuntu-dev"
-
-          sudo mkdir -p "$TARGET"
-          sudo rsync -av --delete "$SOURCE"/ "$TARGET"/
+          mkdir -p "$TARGET"
+          rsync -av --delete ./ "$TARGET"/
