@@ -1,0 +1,26 @@
+name: DEV - Deploy Ubuntu
+
+on:
+  push:
+    branches:
+      - dev-app
+
+jobs:
+  deploy-dev:
+    runs-on: [self-hosted, ubuntu-dev]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Crear carpeta destino si no existe
+        run: |
+          sudo mkdir -p /var/www/html/proyecto-ubuntu-dev
+
+      - name: Sincronizar archivos al servidor DEV
+        run: |
+          SOURCE="$GITHUB_WORKSPACE"
+          TARGET="/var/www/html/proyecto-ubuntu-dev"
+
+          # Sincroniza todo el repo con la carpeta del sitio
+          sudo rsync -av --delete "$SOURCE"/ "$TARGET"/
