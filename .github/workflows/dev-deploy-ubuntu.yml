@@ -6,7 +6,7 @@ on:
       - dev-app
 jobs:
   deploy-dev:
-    runs-on: [self-hosted, ubuntu-dev]
+    runs-on: [self-hosted,dev]
 
     steps:
       - name: Checkout repo
