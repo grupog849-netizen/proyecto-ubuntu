@@ -13,14 +13,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Instalar rsync
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y rsync
+      # rsync ya está instalado en el servidor, no uses sudo aquí
 
       - name: Copiar archivos al entorno DEV (Ubuntu Proxmox)
         run: |
           SOURCE="$GITHUB_WORKSPACE"
           TARGET="/var/www/html/proyecto-ubuntu-dev"
-          sudo mkdir -p "$TARGET"
-          sudo rsync -av --delete "$SOURCE"/ "$TARGET"/
+          mkdir -p "$TARGET"
+          rsync -av --delete "$SOURCE"/ "$TARGET"/
