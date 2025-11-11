@@ -1,1 +1,1 @@
-<h1>DEPLOY DEV-APP OK 🚀</h1>
+<h1>DEPLOY </h1>
