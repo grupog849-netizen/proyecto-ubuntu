@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
         $tipo_mensaje = "error";
     }
 }
-
+// SEGUNDA prueba para el despliegue ubuntu 
 // Procesar UPDATE
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar'])) {
     $id = intval($_POST['id']);
