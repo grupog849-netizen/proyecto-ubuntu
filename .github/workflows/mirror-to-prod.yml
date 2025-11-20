@@ -13,9 +13,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false   # <--- IMPORTANTE
+          persist-credentials: false
 
-      - name: Limpiar credenciales del bot (por si quedaron)
+      - name: Limpiar credenciales del bot
         run: |
           git config --global --unset-all http.https://github.com/.extraheader || true
           git config --global credential.helper "" || true
@@ -30,7 +30,7 @@ jobs:
           git remote remove prod || true
           git remote add prod "https://${{ secrets.PROD_GRUPO3 }}:${{ secrets.PROD_PAT }}@github.com/grupog849-netizen/proyecto-ubuntu-prod.git"
           git remote -v
-          git ls-remote prod   # debe listar refs si el PAT tiene permiso
+          git ls-remote prod
 
       - name: Ramas espejo (fuerza + poda)
         run: |
@@ -39,3 +39,77 @@ jobs:
       - name: Etiquetas espejo (fuerza + poda)
         run: |
           git push --force --prune --tags prod
+
+      # ---------------------------------------------------
+      # MIGRACIONES — DESDE AQUÍ TODO ESTABA MAL IDENTADO
+      # ---------------------------------------------------
+
+      - name: Instalar mysql-client y herramientas
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client default-mysqldump
+
+      - name: Backup de la BD de PRODUCCIÓN
+        env:
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_USER: ${{ secrets.PROD_DB_USER }}
+          DB_PASS: ${{ secrets.PROD_DB_PASS }}
+          DB_NAME: ${{ secrets.PROD_DB_NAME }}
+        run: |
+          set -e
+          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+          mkdir -p tmp_backups
+          echo "Haciendo dump de la BD $DB_NAME en $TIMESTAMP"
+          mysqldump -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" --single-transaction --routines --events "$DB_NAME" > tmp_backups/prod_backup_${TIMESTAMP}.sql
+          ls -lh tmp_backups
+
+      - name: Subir backup como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-db-backup
+          path: tmp_backups/*.sql
+
+      - name: Ejecutar migraciones SQL en PRODUCCIÓN (solo nuevas)
+        env:
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_USER: ${{ secrets.PROD_DB_USER }}
+          DB_PASS: ${{ secrets.PROD_DB_PASS }}
+          DB_NAME: ${{ secrets.PROD_DB_NAME }}
+        run: |
+          set -euo pipefail
+          MIG_DIR="db/migrations"
+
+          if [ ! -d "$MIG_DIR" ]; then
+            echo "No existe $MIG_DIR — no hay migraciones que aplicar."
+            exit 0
+          fi
+
+          mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" <<'SQL'
+          CREATE TABLE IF NOT EXISTS applied_migrations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            filename VARCHAR(255) NOT NULL,
+            applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          ) ENGINE=InnoDB;
+          SQL
+
+          for f in $(ls -1 "$MIG_DIR"/*.sql | sort); do
+            fname=$(basename "$f")
+
+            cnt=$(mysql -N -s -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+              -e "SELECT COUNT(*) FROM applied_migrations WHERE filename = '${fname}';")
+
+            if [ "$cnt" -gt 0 ]; then
+              echo "SKIP (ya aplicada): $fname"
+              continue
+            fi
+
+            echo "APLICANDO: $fname"
+            mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$f"
+
+            mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+              -e "INSERT INTO applied_migrations (filename) VALUES ('${fname}');"
+
+            echo "APLICADA: $fname"
+          done
+
+          echo "Migraciones finalizadas."
