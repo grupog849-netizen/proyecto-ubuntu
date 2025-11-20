@@ -41,13 +41,12 @@ jobs:
           git push --force --prune --tags prod
 
       # ---------------------------------------------------
-      # MIGRACIONES — DESDE AQUÍ TODO ESTABA MAL IDENTADO
+      # MIGRACIONES
       # ---------------------------------------------------
-
-      - name: Instalar mysql-client y herramientas
+      - name: Instalar mysql-client
         run: |
           sudo apt-get update
-          sudo apt-get install -y mysql-client default-mysqldump
+          sudo apt-get install -y mysql-client
 
       - name: Backup de la BD de PRODUCCIÓN
         env:
@@ -86,9 +85,9 @@ jobs:
 
           mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" <<'SQL'
           CREATE TABLE IF NOT EXISTS applied_migrations (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            filename VARCHAR(255) NOT NULL,
-            applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          filename VARCHAR(255) NOT NULL,
+          applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           ) ENGINE=InnoDB;
           SQL
 
@@ -110,6 +109,10 @@ jobs:
               -e "INSERT INTO applied_migrations (filename) VALUES ('${fname}');"
 
             echo "APLICADA: $fname"
+          done
+
+          echo "Migraciones finalizadas."
+
           done
 
           echo "Migraciones finalizadas."
