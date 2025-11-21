@@ -83,6 +83,7 @@ jobs:
             exit 0
           fi
 
+          # crear tabla de control si no existe (sin indentación dentro del heredoc)
           mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" <<'SQL'
           CREATE TABLE IF NOT EXISTS applied_migrations (
           id INT AUTO_INCREMENT PRIMARY KEY,
@@ -91,7 +92,20 @@ jobs:
           ) ENGINE=InnoDB;
           SQL
 
-          for f in $(ls -1 "$MIG_DIR"/*.sql | sort); do
+
+          # --- Manejo seguro si no hay archivos .sql ---
+          # Activamos nullglob para que el patrón que no encuentra archivos no quede literal
+          shopt -s nullglob
+          files=( "$MIG_DIR"/*.sql )
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No hay archivos *.sql en $MIG_DIR — nada para aplicar."
+            exit 0
+          fi
+
+          # Iterar archivos de forma segura (ordenados por nombre)
+          IFS=$'\n' sorted=($(printf "%s\n" "${files[@]}" | sort))
+          for f in "${sorted[@]}"; do
             fname=$(basename "$f")
 
             cnt=$(mysql -N -s -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
@@ -109,10 +123,6 @@ jobs:
               -e "INSERT INTO applied_migrations (filename) VALUES ('${fname}');"
 
             echo "APLICADA: $fname"
-          done
-
-          echo "Migraciones finalizadas."
-
           done
 
           echo "Migraciones finalizadas."
