@@ -3,6 +3,7 @@
 
 //prueba 12212
 
+
 // 🔧 Configuración de la base de datos
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'crud_db');
