@@ -1,7 +1,7 @@
 <?php
 // config.php - Configuración principal y control de accesos
 
-//prueba
+//prueba 12212
 
 // 🔧 Configuración de la base de datos
 define('DB_HOST', 'localhost');
