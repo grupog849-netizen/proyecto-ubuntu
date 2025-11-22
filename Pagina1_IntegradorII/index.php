@@ -67,7 +67,7 @@ if (isset($_GET['editar'])) {
 
 // Obtener todos los productos
 $productos = obtenerProductos();
-
+// preuba dekl shbcfsgbfjkfbejk
 // Cerrar sesión
 if (isset($_GET['cerrar_sesion'])) {
     registrarSalida();

@@ -1,18 +1,12 @@
 <?php
 // config.php - Configuración principal y control de accesos
 
-//prueba 12212
-
-
 // 🔧 Configuración de la base de datos
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'crud_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', '10.50.31.206');   // <-- IP del servidor MariaDB
+define('DB_NAME', 'crud_db');        // <-- nombre de tu BD
+define('DB_USER', 'cruduser');       // <-- usuario que creaste
+define('DB_PASS', '1234');           // <-- contraseña de ese usuario
 define('DB_CHARSET', 'utf8mb4');
-
-// 🌎 Zona horaria local
-date_default_timezone_set('America/Costa_Rica');
 
 // 📡 Conexión PDO
 function getConnection() {
@@ -84,3 +78,4 @@ function registrarSalida() {
         }
     }
 }
+
