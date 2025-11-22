@@ -69,6 +69,7 @@ if (isset($_GET['editar'])) {
 $productos = obtenerProductos();
 // preuba dekl shbcfsgbfjkfbejk
 // Cerrar sesión
+// DHUIFGWEUIFHIWEUHFWEUIF
 if (isset($_GET['cerrar_sesion'])) {
     registrarSalida();
     session_destroy();
