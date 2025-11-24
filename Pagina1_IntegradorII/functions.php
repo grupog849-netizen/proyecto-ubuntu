@@ -13,7 +13,7 @@ function limpiarDato($dato) {
 }
 
 /* ===========================
-   📦 CRUD de Productos
+   📦 CRUD de Productos asasasas
 =========================== */
 function obtenerProductos() {
     $pdo = getConnection();
