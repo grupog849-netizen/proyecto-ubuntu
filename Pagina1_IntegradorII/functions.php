@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 /* ===========================
-   🧼 Utilidades
+   🧼 Utilidades DE PRUEBA 
 =========================== */
 function limpiarDato($dato) {
     return htmlspecialchars(trim((string)$dato), ENT_QUOTES, 'UTF-8');
