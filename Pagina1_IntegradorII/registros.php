@@ -5,7 +5,7 @@ require_once 'functions.php';
 // (Opcional) Asegura zona horaria local
 date_default_timezone_set('America/Costa_Rica');
 
-// Obtener registros recientes
+// Obtener registros recientes a ver si sirve 
 $registros = obtenerRegistrosAcceso(100);
 
 // Cerrar sesión manualmente
